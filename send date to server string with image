@@ -1,0 +1,122 @@
+-(void)updateContactDetails{
+    
+    NSString *str = @"http://augmentdeck.com/parking_app/Vendor_services/update_contact_details";
+    
+    NSString *urlString = [NSString stringWithFormat:@"%@",str];
+    
+    // Create Session
+    NSURLSessionConfiguration *defaultConfuguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:defaultConfuguration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+    
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+    [request setURL:[NSURL URLWithString:urlString]];
+    [request setHTTPMethod:@"POST"];
+    NSMutableData *body = [NSMutableData data];
+    NSString *boundary = @"---------------------------14737809831466499882746641449";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+    [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+    
+    NSData *imageData1 = UIImagePNGRepresentation(vendorProfileImg.image);
+    
+    //  parameter restautant profile picture
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"Content-Disposition: form-data; name=\"vendor_image\"; filename=\"profile.jpg\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:imageData1];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    
+    // getting an NSString
+    NSString *vendor_id = [userDefault stringForKey:@"vendor_id"];
+    
+    //  parameter vendor
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"vendor_id\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[vendor_id dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //  parameter full name
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"full_name\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[txtPersonName.text dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //  parameter mail
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"vendor_mail\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[txtEmail.text dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //  parameter std code
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"std_code\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[txtSTDCode.text dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //  parameter landline number
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"landline_number\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[txtLandLineNumber.text dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //  parameter contact
+    [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"vendor_contact\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [body appendData:[txtMobileNumber.text dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    
+    // close form
+    [body appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    
+    // setting the body of the post to the reqeust
+    [request setHTTPBody:body];
+    
+    
+    NSURLSessionDataTask *dataTask = [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        
+        if (data != nil) {
+
+            
+           NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            NSLog(@"Respose from server = %@", responseDic);
+            
+            if ([[[responseDic valueForKey:@"status"]stringValue] isEqualToString:@"200"])
+            {
+                
+            }
+            else{
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Ooops" message:@"Something went wrong, Please try again later." preferredStyle:UIAlertControllerStyleAlert];
+                
+                UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                    
+                }];
+                
+                [alertController addAction:alertAction];
+                [self presentViewController:alertController animated:YES completion:nil];
+            }
+           
+        }else{
+            
+            NSLog(@"Error = %@", error);
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Ooops" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            [self presentViewController:alertController animated:YES completion:nil];
+            
+        }
+    }];
+    [dataTask resume];
+}
