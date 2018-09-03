@@ -1,0 +1,41 @@
+-(void)getMenuList{
+    
+    NSString *strUrl = @"http://augdeck.com/CookManifest/Vendor_service/show_main_food_category";
+    NSURL *url = [NSURL URLWithString:strUrl];
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDataTask *dataTask = [session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        
+        if (data != nil) {
+            
+            menuListArray = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+            
+            NSLog(@"Dic= %@", menuListArray);
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                if ([menuListArray count]) {
+                    
+                    tblViewMenu.delegate = self;
+                    tblViewMenu.dataSource = self;
+                    [tblViewMenu reloadData];
+                }
+            });
+        }
+        else{
+            
+            NSLog(@"Error = %@", error);
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+        
+        
+    }];
+
+    [dataTask resume];
+}
