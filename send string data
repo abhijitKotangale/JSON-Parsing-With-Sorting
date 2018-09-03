@@ -1,0 +1,83 @@
+-(void)getAmenitiesList{
+    
+    NSString *mainstr = [NSString stringWithFormat:@"http://augmentdeck.com/parking_app/Vendor_services/get_available_aminities"];
+    
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    
+    // getting an NSString
+    NSString *vendor_id = [userDefault stringForKey:@"vendor_id"];
+    
+    NSString *sendRecord = [NSString stringWithFormat:@"vendor_id=%@", vendor_id];
+    
+    NSLog(@"Post value is = %@", sendRecord);
+    
+    // Create Session
+    NSURLSessionConfiguration *defaultConfuguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:defaultConfuguration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+    
+    NSURL *url = [NSURL URLWithString:mainstr];
+    NSMutableURLRequest *urlReq = [NSMutableURLRequest requestWithURL:url];
+    
+    NSString *par = sendRecord;
+    [urlReq setHTTPMethod:@"POST"];
+    [urlReq setHTTPBody:[par dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    NSURLSessionDataTask *dataTask = [urlSession dataTaskWithRequest:urlReq completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        
+        if (data != nil) {
+            
+            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            
+            NSLog(@"Get amenities respose from server = %@", response);
+            
+            if ([[[dic valueForKey:@"status"]stringValue] isEqualToString:@"200"])
+            {
+                getAmenityArray = [dic valueForKey:@"get_available_aminities"];
+                
+                if ([getAmenityArray count]) {
+                    
+                    tblViewAmenities.delegate = self;
+                    tblViewAmenities.dataSource = self;
+                    [tblViewAmenities reloadData];
+                }
+                else{
+                    
+                    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Ooops" message:@"No Amenities Found.." preferredStyle:UIAlertControllerStyleAlert];
+                    
+                    UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                        
+                    }];
+                    
+                    [alertController addAction:alertAction];
+                    [self presentViewController:alertController animated:YES completion:nil];
+                }
+            }
+            else{
+                
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Ooops" message:@"Something went wrong, please try again" preferredStyle:UIAlertControllerStyleAlert];
+                
+                UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                    
+                }];
+                
+                [alertController addAction:alertAction];
+                [self presentViewController:alertController animated:YES completion:nil];
+            }
+        }
+        else{
+            
+            NSLog(@"Error = %@", error);
+            
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Ooops" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+    }];
+    
+    [dataTask resume];
+}
